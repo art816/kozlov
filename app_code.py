@@ -63,7 +63,8 @@ def get_code4(code3):
     unique_value_in_key = sorted(list(set(unique_value_in_key)))
     #print(unique_value_in_key)
     for key_for4 in itertools.combinations(unique_value_in_key, 4):
-        code4[key_for4] = cl.OrderedDict(code3=cl.OrderedDict())
+        code4[key_for4] = cl.OrderedDict(code3=cl.OrderedDict(),
+                                             next_4=None)
         for key_for3 in itertools.combinations(key_for4, 3):
             code_value = code3.get(key_for3)
             if code_value is None:
@@ -71,27 +72,57 @@ def get_code4(code3):
                 break
             else:
                 code4[key_for4]['code3'][key_for3] = code_value
-        #sorting by value, reverse
+        #если не было break. sorting by value, reverse
         else:
-            code4[key_for4]['code3'] = sort_sub_dict_code3(code4[key_for4])
-                # cl.OrderedDict(
-                # sorted(code4[key_for4]['code3'].items(),
-                #         key=operator.itemgetter(1), reverse=True))
+            code4[key_for4]['code3'] = sorted_sub_dict_code3(code4[key_for4])
 
     #переупорядочивание словаря по максимальному значению  в словаре code3
-    code4 = cl.OrderedDict(
-        sorted(code4.items(),
-                key=lambda t: list(t[1]['code3'].values())[0],
-                reverse=True))
+    code4 = sorted_dict_code4(code4)
     return code4
 
-def sort_sub_dict_code3(code):
-    """
 
-    :return:
+def sorted_sub_dict_code3(code):
+    """
+    :return: Сортируем подсловарь  code3 в порядке
+        убывания значения площади.
     """
     return cl.OrderedDict(sorted(code['code3'].items(),
                         key=operator.itemgetter(1), reverse=True))
+
+
+def sorted_dict_code4(code4):
+    """
+    :return: сортируем словарь code4 в порядке убывания
+        наибольшего элемента в code3
+    """
+    return cl.OrderedDict(
+        sorted(code4.items(),
+                key=lambda t: list(t[1]['code3'].values())[0],
+                reverse=True))
+
+
+def add_key_for_next_small4(code4):
+    """
+    :param code4:
+    :return для каждого четырехточечника добавляет ключ
+        следующего четырехугольника, площадь которого меньше, и который
+        содержит точки наибольшего трехточечника в составе данного:
+
+        Ничего не понятно((
+    """
+    keys = list(code4.keys())
+    for num_key in range(len(keys)):
+        bigger_3 = list(code4[keys[num_key]]['code3'].keys())[0]
+        for num_key2 in range(num_key + 1, len(keys)):
+            new_4 = list(keys[num_key2])
+            new_4.extend(bigger_3)
+            if len(set(keys[num_key])) == 4:
+                code4[keys[num_key]]['next_4'] = keys[num_key2]
+                break
+
+
+
+
 
 
 def polyarea(x, y):

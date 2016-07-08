@@ -86,6 +86,22 @@ class Test(unittest.TestCase):
         A, std = app_code.find_transform(target, example)
         self.assertIsNotNone(A)
 
+    def test_add_key_for_next_small4(self):
+        """
+
+        :return:
+        """
+        code3 = app_code.get_code3(
+            self.pix_array)
+        code4 = app_code.get_code4(code3)
+        app_code.add_key_for_next_small4(code4)
+        for key in code4:
+            if code4[key]['next_4']:
+                self.assertGreaterEqual(
+                    list(code4[key]['code3'].values())[0],
+                    list(code4[code4[key]['next_4']]['code3'].values())[0])
+
+
 
 if __name__ == '__main__':
     unittest.main()
