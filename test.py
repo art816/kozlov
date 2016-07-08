@@ -3,8 +3,9 @@ __author__ = 'art'
 import unittest
 import numpy as np
 import itertools
+import copy
 
-import open_image
+import app_code
 
 
 class Test(unittest.TestCase):
@@ -15,37 +16,33 @@ class Test(unittest.TestCase):
         self.x = np.array([0, 0, 1, 1])
         self.y = np.array([0, 1, 1, 0])
         self.image_path = 'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s.bmp'
-        self.pix_array = open_image.open_image(self.image_path)
+        self.pix_array = app_code.open_image(self.image_path)
 
     def tearDown(self):
         """
-
         :return:
         """
         pass
 
     def test_polyarea(self):
         """
-
         :return:
         """
 
-        self.assertEqual(open_image.polyarea(self.x, self.y), 1)
+        self.assertEqual(app_code.polyarea(self.x, self.y), 1)
 
     def test_open_image(self):
         """
-
         :return:
         """
-        self.assertIsNotNone(open_image.open_image(self.image_path))
+        self.assertIsNotNone(app_code.open_image(self.image_path))
 
 
     def test_get_code3(self):
         """
-
         :return:
         """
-        code3 = open_image.get_code3(
+        code3 = app_code.get_code3(
             np.array([self.x, self.y]))
         self.assertEqual(len(code3.keys()), 4)
         for key in itertools.combinations(list(range(4)), 3):
@@ -53,13 +50,41 @@ class Test(unittest.TestCase):
 
     def test_get_code4(self):
         """
+        :return:
+        """
+        code3 = app_code.get_code3(
+            #np.array([self.x, self.y]))
+            self.pix_array)
+        code4 = app_code.get_code4(code3)
+        print(code4)
+        first_key = list(code4.keys())[0]
+        # self.assertEqual(code4.get(first_key)['code3'], code3)
+        code4_values = list(code4.get(first_key)['code3'].values())
+        self.assertEqual(
+            code4_values, sorted(code4_values, reverse=True))
+        code4_first_values_for_key = [list(code4[key]['code3'].values())[0] for key in code4]
+        self.assertEqual(
+            code4_first_values_for_key, sorted(code4_first_values_for_key, reverse=True))
+
+    def test_find_by_code4(self):
+        """
 
         :return:
         """
-        code3 = open_image.get_code3(
+        code3 = app_code.get_code3(
             np.array([self.x, self.y]))
-        code4 = open_image.get_code4(code3)
-        self.assertEqual(code4.get((0, 1, 2, 3))['code3'], code3)
+        example_code4 = app_code.get_code4(code3)
+        etalon_code4 = copy.deepcopy(example_code4)
+        self.assertIsNotNone(app_code.find_by_code4(example_code4, etalon_code4))
+
+    def test_find_transform(self):
+        """
+        :return:
+        """
+        target = np.vstack([self.x, self.y, np.ones(len(self.x))]).T
+        example = np.vstack([self.x, self.y, np.ones(len(self.x))]).T
+        A, std = app_code.find_transform(target, example)
+        self.assertIsNotNone(A)
 
 
 if __name__ == '__main__':
