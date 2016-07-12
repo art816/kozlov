@@ -20,7 +20,7 @@ class Test(unittest.TestCase):
         cls.y = np.array([0, 1, 1, 0])
         cls.image_path = 'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s.bmp'
         cls.pix_array = app_code.open_image(cls.image_path)
-        cls.code3 = app_code.get_code3(
+        cls.code3, cls.index_of1 = app_code.get_code3(
             cls.pix_array)
         cls.code4 = app_code.get_code4(cls.code3)
 
@@ -47,7 +47,7 @@ class Test(unittest.TestCase):
         """
         :return:
         """
-        code3 = app_code.get_code3(
+        code3, index_of1 = app_code.get_code3(
             np.array([self.x, self.y]))
         self.assertEqual(len(code3.keys()), 4)
         for key in itertools.combinations(list(range(4)), 3):
@@ -76,23 +76,57 @@ class Test(unittest.TestCase):
              np.array([self.x, self.y]))
         example_code4 = app_code.get_code4(self.code3)
 
-        target_pix_array = app_code.open_image(self.image_path, rotate=1)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
-        # target_pix_array = app_code.open_image('C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s1.bmp', rotate=1)
+        # target_pix_array = app_code.open_image(self.image_path, rotate=1)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
+        target_pix_array = app_code.open_image('C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s.bmp', rotate=1)
         plt.figure(1)
         plt.imshow(target_pix_array)
         plt.figure(2)
         plt.imshow(self.pix_array)
-        target_code3 = app_code.get_code3(
+        target_code3, target_index_of1 = app_code.get_code3(
             target_pix_array)
         target_code4 = app_code.get_code4(target_code3)
-        print('get_code4')
         app_code.add_key_for_next_small4(target_code4)
-        print('add_target_code4')
         app_code.add_key_for_next_small4(example_code4)
-        print('add_example_code4')
         plt.show()
         # target_code4 = copy.deepcopy(example_code4)
-        self.assertEqual(*app_code.find_by_code4(target_code4, example_code4))
+        pairs_equal_code = app_code.find_by_code4(target_code4, example_code4)
+        target_x = []
+        target_y = []
+        example_x = []
+        example_y = []
+        for pairs in pairs_equal_code:
+        # pairs = pairs_equal_code[0]
+            for target_n, example_n in pairs:
+                target_x.append(target_index_of1[0][target_n])
+                target_y.append(target_index_of1[1][target_n])
+                example_x.append(self.index_of1[0][example_n])
+                example_y.append(self.index_of1[1][example_n])
+        target = np.vstack([target_x, target_y, np.ones(len(target_x))]).T
+        example = np.vstack([example_x, example_y, np.ones(len(example_x))]).T
+        A, std = app_code.find_transform(target, example)
+        print(A, std)
+        pix_array = np.zeros(self.pix_array.shape)
+        # print(image_array.shape, np.max(image_array), image_array)
+        #print(np.max(image_array), np.min(image_array), image_array.shape,
+        #      width, height)
+        for t0 in range(0, len(self.index_of1[0])):
+            x = np.array(self.index_of1[0][t0])
+            y = np.array(self.index_of1[1][t0])
+            example = np.vstack([x, y, 1]).T
+            xy = np.dot(example, A)
+            pix_array[int(round(xy[0][0])), int(round(xy[0][1]))] = 1
+        rgbArray = np.ones((self.pix_array.shape[0], self.pix_array.shape[1], 3), 'uint8')
+        print(rgbArray.shape)
+        rgbArray[..., 0] = 255*(target_pix_array)
+        rgbArray[..., 1] = 255*(pix_array)
+        rgbArray[..., 2] = 128*np.ones(self.pix_array.shape, 'uint8')
+        plt.figure(3)
+        plt.imshow(rgbArray, interpolation='none')
+        plt.show()
+
+
+
+
 
     def test_find_transform(self):
         """
@@ -115,6 +149,9 @@ class Test(unittest.TestCase):
                 self.assertGreaterEqual(
                     list(code4[key]['code3'].values())[0],
                     list(code4[code4[key]['next_4']]['code3'].values())[0])
+                # list(code4[key]['code3'].values())
+                # list(code4[code4[key]['next_4']]['code3'].values())
+                # self.assertEqual(len(set(list(list(code4[key]['code3'].keys())[0]).extend(list(code4[code4[key]['next_4']]['code3'].keys())[0]))))
 
     def test_corr_between_points(self):
         """

@@ -35,7 +35,7 @@ def get_code3(pix_array):
                 pl_area = polyarea(x, y)
                 if pl_area >= 2:
                     code3[(t0, t1, t2)] = pl_area
-    return code3
+    return code3, index_of1
 
 
 def get_code4(code3):
@@ -100,8 +100,8 @@ def sorted_dict_code4(code4):
     """
     return cl.OrderedDict(
         sorted(code4.items(),
-                # key=lambda t: list(t[1]['code3'].values())[0],
-                key=lambda t: sum(t[1]['code3'].values()),
+                key=lambda t: list(t[1]['code3'].values())[0],
+                # key=lambda t: sum(t[1]['code3'].values()),
                 reverse=True))
 
 
@@ -120,7 +120,11 @@ def add_key_for_next_small4(code4):
         for num_key2 in range(num_key + 1, len(keys)):
             new_4 = list(keys[num_key2])
             new_4.extend(bigger_3)
-            if len(set(keys[num_key])) == 4:
+            # new_3 = list(code4[keys[num_key2]]['code3'].keys())[0]
+            # new_3.extend(bigger_3)
+            # if len(set(keys[num_key])) == 4:
+            # if len(set(keys[num_key])) == 4:
+            if len(set(new_4)) == 4:
                 code4[keys[num_key]]['next_4'] = keys[num_key2]
                 break
 
@@ -143,7 +147,7 @@ def open_image(image_path, rotate=None):
         с яркость < 0.5*max поставлена в соответствие 1
         с яркость >= 0.5*max поставлен в соответствие 0:
     """
-    image = Image.open(image_path)#.convert('L')
+    image = Image.open(image_path).convert('L')
     if rotate:
         image = Image.fromarray(image_to_array(image))
         image = image.rotate(cfg.rotate)
@@ -167,7 +171,7 @@ def image_to_array(image):
     for num_str in range(height):
         for num_coll in range(width):
             pix_array[num_str, num_coll] = \
-                1 if image_array[num_str, num_coll] < 0.1*np.max(image_array) \
+                1 if image_array[num_str, num_coll] < cfg.img_level*np.max(image_array) \
                 else 0
     return pix_array
 
@@ -188,6 +192,8 @@ def find_by_code4(target_code4, example_code4):
     for num_target_key in range(len(target_keys)):
         # for num_example_key in range(num_finder_example_key, len(example_keys)):
         # if target_code4[target_keys[num_target_key]]['investigated'] is False:
+        #     if list(example_code4[example_keys[num_example_key]]['code3'].values)[0]/list(target_code4[target_keys[num_target_key]]['code3'].values)[0] > cfg.diff_size:
+                # break
             for num_example_key in range(len(example_keys)):
                 curr_target_key = target_keys[num_target_key]
                 curr_example_key = example_keys[num_example_key]
@@ -196,9 +202,12 @@ def find_by_code4(target_code4, example_code4):
                 list_current_keys_target = []
                 num_iteration = 0
                 num_equals = 0
-                if equal_code(
+                pair_equal_code = []
+                curr_pair_equal_code = equal_code(
                         (curr_target_key, current_target_code4),
-                        (curr_example_key, current_example_code4)):
+                        (curr_example_key, current_example_code4))
+                if curr_pair_equal_code:
+                    pair_equal_code.append(curr_pair_equal_code)
                     list_current_keys_target.append(curr_target_key)
                     curr_target_key = current_target_code4['next_4']
                     curr_example_key = current_example_code4['next_4']
@@ -209,9 +218,11 @@ def find_by_code4(target_code4, example_code4):
                         num_iteration += 1
                         current_target_code4 = target_code4[curr_target_key]
                         current_example_code4 = example_code4[curr_example_key]
-                        if equal_code(
-                                (curr_target_key, current_target_code4),
-                                (curr_example_key, current_example_code4)):
+                        curr_pair_equal_code = equal_code(
+                            (curr_target_key, current_target_code4),
+                            (curr_example_key, current_example_code4))
+                        if curr_pair_equal_code:
+                            pair_equal_code.append(curr_pair_equal_code)
                             list_current_keys_target.append(curr_target_key)
                             curr_target_key = current_target_code4['next_4']
                             curr_example_key = current_example_code4['next_4']
@@ -219,21 +230,24 @@ def find_by_code4(target_code4, example_code4):
                         else:
                             curr_target_key = current_target_code4['next_4']
 
-                if curr_example_key is None or num_equals:
                     count_finder_key += 1
-                    print(
-                        ('Target key num {} = {}  Example key num {} = {}\n'
-                         'Num equals = {} '
-                         'Num iterations = {} equals/iterations = {}').format(
-                            num_target_key, list(target_code4[target_keys[num_target_key]]['code3'].values()),
-                            num_example_key, list(example_code4[example_keys[num_example_key]]['code3'].values()),
-                            num_equals, num_iteration,
-                            np.float64(num_equals)/num_iteration))
+                    # print(
+                    #     ('Target key num {} = {}  Example key num {} = {}\n'
+                    #      'Num equals = {} '
+                    #      'Num iterations = {} equals/iterations = {}').format(
+                    #         num_target_key, list(target_code4[target_keys[num_target_key]]['code3'].values()),
+                    #         num_example_key, list(example_code4[example_keys[num_example_key]]['code3'].values()),
+                    #         num_equals, num_iteration,
+                    #         np.float64(num_equals)/num_iteration))
 
                     for current_key in list_current_keys_target:
                         target_code4[current_key]['investigated'] = True
                     # for a,b,c in zip(target_code4.values(), example_code4.values(), range(len(example_code4))):
                     # print("{} target {}    example {}".format(c, list(a['code3'].values()), list(b['code3'].values())))
+                    if num_equals >= cfg.num_equal:
+                        # print(len(example_code4.keys()), count_finder_key, num_equals, pair_equal_code)
+                        return pair_equal_code
+
     return len(example_code4.keys()), count_finder_key
 
 
@@ -256,16 +270,21 @@ def equal_element_code(target_element_code, example_element_code):
     :param target_element_code:
     :param example_element_code:
     :return: True если коды равны с указаной точностью.
-               Иначе False.
+               Иначе False. или отношение площадей
     """
     decimals = cfg.decimals
-    return np.array_equal(
-        np.around(
-            np.array(target_element_code)/target_element_code[0],
-            decimals=decimals),
-        np.around(
-            np.array(example_element_code)/example_element_code[0],
-            decimals=decimals))
+    if max(
+            target_element_code[0]/example_element_code[0],
+            example_element_code[0]/target_element_code[0]) < cfg.diff_size:
+        return np.array_equal(
+            np.around(
+                np.array(target_element_code)/target_element_code[0],
+                decimals=decimals),
+            np.around(
+                np.array(example_element_code)/example_element_code[0],
+                decimals=decimals))
+    # else:
+    #     return target_element_code[0]/example_element_code[0]
 
 
 def find_transform(target, example):
