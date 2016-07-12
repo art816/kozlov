@@ -189,53 +189,76 @@ def find_by_code4(target_code4, example_code4):
         # for num_example_key in range(num_finder_example_key, len(example_keys)):
         # if target_code4[target_keys[num_target_key]]['investigated'] is False:
             for num_example_key in range(len(example_keys)):
-                if equal_element_code(
-                        list(target_code4[target_keys[num_target_key]]['code3'].values()),
-                        list(example_code4[example_keys[num_example_key]]['code3'].values())) and \
-                        corr_between_points((target_keys[num_target_key], target_code4[target_keys[num_target_key]]),
-                                               (example_keys[num_example_key], example_code4[example_keys[num_example_key]])):
-                    current_target_code4 = target_code4[target_keys[num_target_key]]
-                    current_example_code4 = example_code4[example_keys[num_example_key]]
-                    i = 1
-                    list_current_keys_target = [target_keys[num_target_key]]
-                    while current_target_code4['next_4'] and current_example_code4['next_4']:
-                        i += 1
-                        if equal_element_code(
-                                list(current_target_code4['code3'].values()),
-                                list(current_example_code4['code3'].values())):
-                            list_current_keys_target.append(current_target_code4['next_4'])
-                            current_target_code4 = target_code4[current_target_code4['next_4']]
-                            current_example_code4 = example_code4[current_example_code4['next_4']]
+                curr_target_key = target_keys[num_target_key]
+                curr_example_key = example_keys[num_example_key]
+                current_target_code4 = target_code4[curr_target_key]
+                current_example_code4 = example_code4[curr_example_key]
+                list_current_keys_target = []
+                num_iteration = 0
+                num_equals = 0
+                if equal_code(
+                        (curr_target_key, current_target_code4),
+                        (curr_example_key, current_example_code4)):
+                    list_current_keys_target.append(curr_target_key)
+                    curr_target_key = current_target_code4['next_4']
+                    curr_example_key = current_example_code4['next_4']
+
+                    num_iteration = 1
+                    num_equals = 1
+                    while curr_target_key and curr_example_key:
+                        num_iteration += 1
+                        current_target_code4 = target_code4[curr_target_key]
+                        current_example_code4 = example_code4[curr_example_key]
+                        if equal_code(
+                                (curr_target_key, current_target_code4),
+                                (curr_example_key, current_example_code4)):
+                            list_current_keys_target.append(curr_target_key)
+                            curr_target_key = current_target_code4['next_4']
+                            curr_example_key = current_example_code4['next_4']
+                            num_equals += 1
                         else:
-                            break
-                    else:
-                        if not current_example_code4['next_4'] or i >= 2:
-                            num_finder_example_key = num_example_key
-                            count_finder_key += 1
-                            print(num_target_key, num_example_key, i)
-                            for current_key in list_current_keys_target:
-                                target_code4[current_key]['investigated'] = True
-                            break
-    # for a,b,c in zip(target_code4.values(), example_code4.values(), range(len(example_code4))):
-        # print("{} target {}    example {}".format(c, list(a['code3'].values()), list(b['code3'].values())))
+                            curr_target_key = current_target_code4['next_4']
+
+                if curr_example_key is None or num_equals:
+                    count_finder_key += 1
+                    print(
+                        ('Target key num {} = {}  Example key num {} = {}\n'
+                         'Num equals = {} '
+                         'Num iterations = {} equals/iterations = {}').format(
+                            num_target_key, list(target_code4[target_keys[num_target_key]]['code3'].values()),
+                            num_example_key, list(example_code4[example_keys[num_example_key]]['code3'].values()),
+                            num_equals, num_iteration,
+                            np.float64(num_equals)/num_iteration))
+
+                    for current_key in list_current_keys_target:
+                        target_code4[current_key]['investigated'] = True
+                    # for a,b,c in zip(target_code4.values(), example_code4.values(), range(len(example_code4))):
+                    # print("{} target {}    example {}".format(c, list(a['code3'].values()), list(b['code3'].values())))
     return len(example_code4.keys()), count_finder_key
 
 
+def equal_code(target, example):
+    """
+
+    :param target: tuple(key, value)
+    :param example: tuple(key, value)
+    :return: список из пар соответствующих точек если коды равны и
+               нашлось соответствие между точками. Иначе None
+    """
+    if equal_element_code(
+            list(target[1]['code3'].values()),
+            list(example[1]['code3'].values())):
+        return corr_between_points(target, example)
+
 def equal_element_code(target_element_code, example_element_code):
+    """
+
+    :param target_element_code:
+    :param example_element_code:
+    :return: True если коды равны с указаной точностью.
+               Иначе False.
+    """
     decimals = cfg.decimals
-    # print(np.around(
-    #         np.array(target_element_code)/target_element_code[0],
-    #         decimals=decimals),
-    #       np.around(
-    #         np.array(example_element_code)/example_element_code[0],
-    #         decimals=decimals),
-    #       np.array_equal(
-    #     np.around(
-    #         np.array(target_element_code)/target_element_code[0],
-    #         decimals=decimals),
-    #     np.around(
-    #         np.array(example_element_code)/example_element_code[0],
-    #         decimals=decimals)))
     return np.array_equal(
         np.around(
             np.array(target_element_code)/target_element_code[0],
@@ -256,7 +279,8 @@ def corr_between_points(target, example):
 
     :param target:
     :param example:
-    :return:
+    :return:  список из пар соответствующих точек если
+               нашлось соответствие между точками. Иначе None.
     """
     value_count_target = cl.OrderedDict()
     value_count_example = cl.OrderedDict()

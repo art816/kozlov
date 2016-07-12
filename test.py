@@ -76,8 +76,8 @@ class Test(unittest.TestCase):
              np.array([self.x, self.y]))
         example_code4 = app_code.get_code4(self.code3)
 
-        # target_pix_array = app_code.open_image(self.image_path, rotate=1)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
-        target_pix_array = app_code.open_image('C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s1.bmp', rotate=1)
+        target_pix_array = app_code.open_image(self.image_path, rotate=1)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
+        # target_pix_array = app_code.open_image('C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s1.bmp', rotate=1)
         plt.figure(1)
         plt.imshow(target_pix_array)
         plt.figure(2)
@@ -133,6 +133,16 @@ class Test(unittest.TestCase):
             list(list(self.code4.values())[0]['code3'].values()),
             list(list(self.code4.values())[0]['code3'].values())))
         self.assertTrue(app_code.equal_element_code([3.0, 3.0, 1.5, 1.5], [3.0, 3.0, 1.5, 1.5]))
+
+    def test_equal_code(self):
+        """
+
+        :return:
+        """
+        self.assertTrue(app_code.equal_code(
+            list(self.code4.items())[0], list(self.code4.items())[0]))
+
+
 
 
 if __name__ == '__main__':
