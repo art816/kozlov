@@ -77,11 +77,11 @@ class Test(unittest.TestCase):
         example_code4 = app_code.get_code4(self.code3)
 
         # target_pix_array = app_code.open_image(self.image_path, rotate=1)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
-        target_pix_array = app_code.open_image('C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s.bmp', rotate=1)
+        target_pix_array = app_code.open_image('C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s1.bmp', rotate=1)
         plt.figure(1)
-        plt.imshow(target_pix_array)
+        plt.imshow(target_pix_array, interpolation='none')
         plt.figure(2)
-        plt.imshow(self.pix_array)
+        plt.imshow(self.pix_array, interpolation='none')
         target_code3, target_index_of1 = app_code.get_code3(
             target_pix_array)
         target_code4 = app_code.get_code4(target_code3)
@@ -94,6 +94,8 @@ class Test(unittest.TestCase):
         target_y = []
         example_x = []
         example_y = []
+        # TODO убрать повторяющиеся пары в коде.
+        print(pairs_equal_code)
         for pairs in pairs_equal_code:
         # pairs = pairs_equal_code[0]
             for target_n, example_n in pairs:
@@ -105,7 +107,7 @@ class Test(unittest.TestCase):
         example = np.vstack([example_x, example_y, np.ones(len(example_x))]).T
         A, std = app_code.find_transform(target, example)
         print(A, std)
-        pix_array = np.zeros(self.pix_array.shape)
+        pix_array = np.zeros(target_pix_array.shape)
         # print(image_array.shape, np.max(image_array), image_array)
         #print(np.max(image_array), np.min(image_array), image_array.shape,
         #      width, height)
@@ -115,11 +117,11 @@ class Test(unittest.TestCase):
             example = np.vstack([x, y, 1]).T
             xy = np.dot(example, A)
             pix_array[int(round(xy[0][0])), int(round(xy[0][1]))] = 1
-        rgbArray = np.ones((self.pix_array.shape[0], self.pix_array.shape[1], 3), 'uint8')
+        rgbArray = np.ones((target_pix_array.shape[0], target_pix_array.shape[1], 3), 'uint8')
         print(rgbArray.shape)
         rgbArray[..., 0] = 255*(target_pix_array)
         rgbArray[..., 1] = 255*(pix_array)
-        rgbArray[..., 2] = 128*np.ones(self.pix_array.shape, 'uint8')
+        rgbArray[..., 2] = 128*np.ones(target_pix_array.shape, 'uint8')
         plt.figure(3)
         plt.imshow(rgbArray, interpolation='none')
         plt.show()

@@ -100,8 +100,8 @@ def sorted_dict_code4(code4):
     """
     return cl.OrderedDict(
         sorted(code4.items(),
-                key=lambda t: list(t[1]['code3'].values())[0],
-                # key=lambda t: sum(t[1]['code3'].values()),
+                # key=lambda t: list(t[1]['code3'].values())[0],
+                key=lambda t: sum(t[1]['code3'].values()),
                 reverse=True))
 
 
@@ -151,6 +151,9 @@ def open_image(image_path, rotate=None):
     if rotate:
         image = Image.fromarray(image_to_array(image))
         image = image.rotate(cfg.rotate)
+        new_size = cfg.resize * np.array([image.size[0], image.size[1]])
+        new_size = new_size.astype(int)
+        image = image.resize(new_size)
         image = Image.fromarray(image_to_array(image))
         #image.show()
     return image_to_array(image)
@@ -207,7 +210,7 @@ def find_by_code4(target_code4, example_code4):
                         (curr_target_key, current_target_code4),
                         (curr_example_key, current_example_code4))
                 if curr_pair_equal_code:
-                    pair_equal_code.append(curr_pair_equal_code)
+                    pair_equal_code.extend(curr_pair_equal_code)
                     list_current_keys_target.append(curr_target_key)
                     curr_target_key = current_target_code4['next_4']
                     curr_example_key = current_example_code4['next_4']
@@ -222,7 +225,7 @@ def find_by_code4(target_code4, example_code4):
                             (curr_target_key, current_target_code4),
                             (curr_example_key, current_example_code4))
                         if curr_pair_equal_code:
-                            pair_equal_code.append(curr_pair_equal_code)
+                            pair_equal_code.extend(curr_pair_equal_code)
                             list_current_keys_target.append(curr_target_key)
                             curr_target_key = current_target_code4['next_4']
                             curr_example_key = current_example_code4['next_4']
@@ -246,9 +249,9 @@ def find_by_code4(target_code4, example_code4):
                     # print("{} target {}    example {}".format(c, list(a['code3'].values()), list(b['code3'].values())))
                     if num_equals >= cfg.num_equal:
                         # print(len(example_code4.keys()), count_finder_key, num_equals, pair_equal_code)
-                        return pair_equal_code
+                        return [pair_equal_code]
 
-    return len(example_code4.keys()), count_finder_key
+    # return len(example_code4.keys()), count_finder_key
 
 
 def equal_code(target, example):
