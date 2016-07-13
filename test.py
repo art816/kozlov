@@ -6,6 +6,7 @@ import itertools
 import copy
 from PIL import Image
 import matplotlib.pyplot as plt
+import os
 
 import app_code
 
@@ -18,7 +19,8 @@ class Test(unittest.TestCase):
         """
         cls.x = np.array([0, 0, 1, 1])
         cls.y = np.array([0, 1, 1, 0])
-        cls.image_path = 'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s.bmp'
+        cls.image_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'a_s.bmp')
         cls.pix_array = app_code.open_image(cls.image_path)
         cls.code3, cls.index_of1 = app_code.get_code3(
             cls.pix_array)
@@ -76,8 +78,9 @@ class Test(unittest.TestCase):
              np.array([self.x, self.y]))
         example_code4 = app_code.get_code4(self.code3)
 
-        # target_pix_array = app_code.open_image(self.image_path, rotate=1)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
-        target_pix_array = app_code.open_image('C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\a_s1.bmp', rotate=1)
+        target_pix_array = app_code.open_image(self.image_path, rotate=1)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
+        target_pix_array = app_code.open_image(os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'a_s1.bmp'), rotate=1)
         plt.figure(1)
         plt.imshow(target_pix_array, interpolation='none')
         plt.figure(2)
