@@ -173,8 +173,9 @@ def image_to_array(image):
     #      width, height)
     for num_str in range(height):
         for num_coll in range(width):
+            #TODO выбирать только особые точки, а то слишком много
             pix_array[num_str, num_coll] = \
-                1 if image_array[num_str, num_coll] < cfg.img_level*np.max(image_array) \
+                1 if image_array[num_str, num_coll] < cfg.img_level_binary*np.max(image_array) \
                 else 0
     return pix_array
 
@@ -191,6 +192,7 @@ def find_by_code4(target_code4, example_code4):
 
     num_finder_example_key = 0
     count_finder_key = 0
+    list_pairs = []
     print('len(target_keys)=', len(target_keys), 'len(example_keys)=', len(example_keys))
     for num_target_key in range(len(target_keys)):
         # for num_example_key in range(num_finder_example_key, len(example_keys)):
@@ -249,8 +251,10 @@ def find_by_code4(target_code4, example_code4):
                     # print("{} target {}    example {}".format(c, list(a['code3'].values()), list(b['code3'].values())))
                     if num_equals >= cfg.num_equal:
                         # print(len(example_code4.keys()), count_finder_key, num_equals, pair_equal_code)
-                        return [pair_equal_code]
-
+                        list_pairs.append(pair_equal_code)
+                        break
+                        # return [pair_equal_code]
+    return list_pairs
     # return len(example_code4.keys()), count_finder_key
 
 
@@ -324,6 +328,31 @@ def corr_between_points(target, example):
     if ([value for value in value_count_target.values()] ==
             [value for value in value_count_example.values()]):
         return list(zip(value_count_target.keys(), value_count_example.keys()))
+
+def transform(index_of1, size_array):
+    """
+    Transform without interpolation.
+    :param index_of1:
+    :return:
+    """
+    A = np.array([[np.cos(cfg.rotate * np.pi / 180),
+                     -np.sin(cfg.rotate * np.pi / 180), 0],
+                    [np.sin(cfg.rotate * np.pi / 180),
+                     np.cos(cfg.rotate * np.pi / 180), 0],
+                    [0, 0, 1]])
+    A = A.T * cfg.resize
+    #TODO size???
+    new_size = np.array(size_array) * cfg.resize[:2] * 2
+    new_size = new_size.astype(int)
+    pix_array = np.zeros(new_size)
+    for t0 in range(0, len(index_of1[0])):
+        x = np.array(index_of1[0][t0])
+        y = np.array(index_of1[1][t0])
+        example = np.vstack([x, y, 1]).T
+        xy = np.dot(example, A)
+        pix_array[int(xy[0][0]) if xy[0][0] < new_size[0] - 1 else new_size[0] - 1,
+                   int(xy[0][1]) if xy[0][1] < new_size[1] - 1 else new_size[1] - 1] = 1
+    return pix_array
 
 
 
