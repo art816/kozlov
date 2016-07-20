@@ -5,6 +5,8 @@ import numpy as np
 import collections as cl
 import itertools
 import operator
+import cv2
+import matplotlib.pyplot as plt
 
 import config as cfg
 
@@ -166,11 +168,8 @@ def image_to_array(image):
     """
     width = image.size[0]
     height = image.size[1]
-    pix_array = np.zeros((height, width))
+    pix_array = np.zeros((height, width), 'uint8')
     image_array = np.asarray(image)
-    # print(image_array.shape, np.max(image_array), image_array)
-    #print(np.max(image_array), np.min(image_array), image_array.shape,
-    #      width, height)
     for num_str in range(height):
         for num_coll in range(width):
             #TODO выбирать только особые точки, а то слишком много
@@ -178,6 +177,22 @@ def image_to_array(image):
                 1 if image_array[num_str, num_coll] < cfg.img_level_binary*np.max(image_array) \
                 else 0
     return pix_array
+
+
+def find_futures(pix_array, num_futures):
+    """
+
+    :param pix_array:
+    :return:
+    """
+    dst = cv2.cornerHarris(pix_array, 5, 3, 0.01)
+    new_array = np.zeros((pix_array.shape[0], pix_array.shape[1], 3), 'uint8')
+    sort_dst = np.sort(abs(dst), axis=None)
+    for i in range(pix_array.shape[0]):
+        for j in range(pix_array.shape[1]):
+            new_array[i][j] = [0, 0, 255] if abs(dst[i][j])>sort_dst[-num_futures] \
+                else np.array([255, 0, 0])*pix_array[i][j]
+    return new_array
 
 
 def find_by_code4(target_code4, example_code4):

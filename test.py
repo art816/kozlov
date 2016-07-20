@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import os
 from multiprocessing import Process
 
+
 import app_code
 import config as cfg
 
@@ -147,6 +148,15 @@ class Test(unittest.TestCase):
                 plt.imshow(rgbArray, interpolation='none')
                 #TODO открывать изображения в новом потоке
                 plt.show()
+
+    def test_find_futures(self):
+        """
+
+        :return:
+        """
+        pix_array = app_code.find_futures(self.pix_array, num_futures=5)
+        plt.imshow(pix_array, interpolation='none')
+        plt.show()
 
 
     def test_transform(self):
