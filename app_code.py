@@ -24,6 +24,7 @@ def get_code3(pix_array):
     """
    # print('get_code')
     code3 = cl.OrderedDict()
+    #TODO вынести отдельно поиск ненулевых элементов
     index_of1 = np.where(pix_array == 1)
    # print(pix_array)
    # print(len(index_of1[0]))
@@ -151,6 +152,8 @@ def open_image(image_path, rotate=None):
     """
     image = Image.open(image_path).convert('L')
     if rotate:
+        # Преобразование image_to_array чтобы инвертировать цвета,
+        # при повороте добавляется черный фон.
         image = Image.fromarray(image_to_array(image))
         image = image.rotate(cfg.rotate)
         new_size = cfg.resize * np.array([image.size[0], image.size[1]])
@@ -251,26 +254,13 @@ def find_by_code4(target_code4, example_code4):
                             curr_target_key = current_target_code4['next_4']
 
                     count_finder_key += 1
-                    # print(
-                    #     ('Target key num {} = {}  Example key num {} = {}\n'
-                    #      'Num equals = {} '
-                    #      'Num iterations = {} equals/iterations = {}').format(
-                    #         num_target_key, list(target_code4[target_keys[num_target_key]]['code3'].values()),
-                    #         num_example_key, list(example_code4[example_keys[num_example_key]]['code3'].values()),
-                    #         num_equals, num_iteration,
-                    #         np.float64(num_equals)/num_iteration))
-
                     for current_key in list_current_keys_target:
                         target_code4[current_key]['investigated'] = True
-                    # for a,b,c in zip(target_code4.values(), example_code4.values(), range(len(example_code4))):
-                    # print("{} target {}    example {}".format(c, list(a['code3'].values()), list(b['code3'].values())))
                     if num_equals >= cfg.num_equal:
-                        # print(len(example_code4.keys()), count_finder_key, num_equals, pair_equal_code)
                         list_pairs.append(pair_equal_code)
                         break
                         # return [pair_equal_code]
     return list_pairs
-    # return len(example_code4.keys()), count_finder_key
 
 
 def equal_code(target, example):

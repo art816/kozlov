@@ -8,6 +8,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import os
 from multiprocessing import Process
+import glob
 
 
 import app_code
@@ -47,9 +48,21 @@ class Test(unittest.TestCase):
         """
         self.assertIsNotNone(app_code.open_image(self.image_path))
 
+    def test_open_dir(self):
+        """
+
+        :return:
+        """
+        self.assertIsInstance(
+            glob.glob(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             'алфавит', '*')),
+            list)
 
     def test_get_code3(self):
         """
+
+        :rtype : object
         :return:
         """
         code3, index_of1 = app_code.get_code3(
@@ -191,6 +204,7 @@ class Test(unittest.TestCase):
 
         :return:
         """
+        #TODO Сейчас не работает так как переупорядочевание немного другое
         code4 = copy.deepcopy(self.code4)
         app_code.add_key_for_next_small4(code4)
         for key in code4:
