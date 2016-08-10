@@ -157,12 +157,13 @@ def open_image(image_path, rotate=None):
         # Преобразование image_to_array чтобы инвертировать цвета,
         # при повороте добавляется черный фон.
         image = Image.fromarray(image_to_array(image))
-        image = image.rotate(cfg.rotate)
-        new_size = cfg.resize * np.array([image.size[0], image.size[1]])
-        new_size = new_size.astype(int)
-        image = image.resize(new_size)
+        image = image.rotate(cfg.rotate, expand=1)
+        # new_size = cfg.resize[:2] * np.array([image.size[0], image.size[1]])
+        # new_size = new_size.astype(int)
+        # print(new_size)
+        # image = image.resize(new_size, resample=0)
         image = Image.fromarray(image_to_array(image))
-        #image.show()
+        # image.show()
     return image_to_array(image)
 
 def image_to_array(image):
@@ -347,9 +348,12 @@ def transform(index_of1, size_array):
                     [np.sin(cfg.rotate * np.pi / 180),
                      np.cos(cfg.rotate * np.pi / 180), 0],
                     [0, 0, 1]])
+    A = np.array([[1, 0, 0],
+                 [0, 1, 0],
+                 [0, 0, 1]])
     A = A.T * cfg.resize
-    #TODO size???
-    new_size = np.array(size_array) * cfg.resize[:2] * 2
+    #TODO size, пересчет размеров с учетом поворота!!!!!!!!!!!???
+    new_size = np.array(size_array) * cfg.resize[:2]# * 2
     new_size = new_size.astype(int)
     pix_array = np.zeros(new_size)
     for t0 in range(0, len(index_of1[0])):

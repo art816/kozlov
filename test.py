@@ -98,7 +98,7 @@ class Test(unittest.TestCase):
         # target_pix_array = app_code.open_image(self.image_path, rotate=0)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
         target_pix_array = app_code.open_image(
             os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         cfg.image_names[0]), rotate=0)
+                         cfg.image_names[1]), rotate=1)
 
         target_code3, target_index_of1 = app_code.get_code3(
             target_pix_array)
@@ -187,15 +187,15 @@ class Test(unittest.TestCase):
         """
         target_pix_array = app_code.open_image(os.path.join(
             os.path.dirname(os.path.abspath(__file__)), cfg.image_names[1]),
-            rotate=0)
+            rotate=1)
         plt.figure(1)
         plt.imshow(target_pix_array, interpolation='none')
-        target_code3, target_index_of1 = app_code.get_code3(
-            target_pix_array)
-        transform_pix_array = app_code.transform(target_index_of1,
-                                                 target_pix_array.shape)
-        plt.figure(2)
-        plt.imshow(transform_pix_array, interpolation='none')
+        # target_code3, target_index_of1 = app_code.get_code3(
+        #     target_pix_array)
+        # transform_pix_array = app_code.transform(target_index_of1,
+        #                                          target_pix_array.shape)
+        # plt.figure(2)
+        # plt.imshow(transform_pix_array, interpolation='none')
         plt.show()
 
     def test_find_transform(self):
