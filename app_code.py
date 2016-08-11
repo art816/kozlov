@@ -316,6 +316,7 @@ def corr_between_points(target, example):
     :return:  список из пар соответствующих точек если
                нашлось соответствие между точками. Иначе None.
     """
+    # TODO Возможна неправильная работа если все площади равны
     value_count_target = cl.OrderedDict()
     value_count_example = cl.OrderedDict()
     # print(target[0], target[1])
@@ -333,6 +334,7 @@ def corr_between_points(target, example):
                 key=operator.itemgetter(1)))
     # если нашлось соответствие возвращаем список из пар точек,
     # иначе None
+    # print(value_count_target, '\n', value_count_example)
     if ([value for value in value_count_target.values()] ==
             [value for value in value_count_example.values()]):
         return list(zip(value_count_target.keys(), value_count_example.keys()))
@@ -348,12 +350,12 @@ def transform(index_of1, size_array):
                     [np.sin(cfg.rotate * np.pi / 180),
                      np.cos(cfg.rotate * np.pi / 180), 0],
                     [0, 0, 1]])
-    A = np.array([[1, 0, 0],
-                 [0, 1, 0],
-                 [0, 0, 1]])
+    # A = np.array([[1, 0, 0],
+    #              [0, 1, 0],
+    #              [0, 0, 1]])
     A = A.T * cfg.resize
     #TODO size, пересчет размеров с учетом поворота!!!!!!!!!!!???
-    new_size = np.array(size_array) * cfg.resize[:2]# * 2
+    new_size = np.array(size_array) * cfg.resize[:2] * 2
     new_size = new_size.astype(int)
     pix_array = np.zeros(new_size)
     for t0 in range(0, len(index_of1[0])):

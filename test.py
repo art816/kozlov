@@ -5,6 +5,7 @@ import glob
 import itertools
 import os
 import unittest
+import collections as cl
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -98,7 +99,7 @@ class Test(unittest.TestCase):
         # target_pix_array = app_code.open_image(self.image_path, rotate=0)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
         target_pix_array = app_code.open_image(
             os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         cfg.image_names[1]), rotate=1)
+                         cfg.image_names[1]), rotate=0)
 
         target_code3, target_index_of1 = app_code.get_code3(
             target_pix_array)
@@ -187,15 +188,15 @@ class Test(unittest.TestCase):
         """
         target_pix_array = app_code.open_image(os.path.join(
             os.path.dirname(os.path.abspath(__file__)), cfg.image_names[1]),
-            rotate=1)
+            rotate=0)
         plt.figure(1)
         plt.imshow(target_pix_array, interpolation='none')
-        # target_code3, target_index_of1 = app_code.get_code3(
-        #     target_pix_array)
-        # transform_pix_array = app_code.transform(target_index_of1,
-        #                                          target_pix_array.shape)
-        # plt.figure(2)
-        # plt.imshow(transform_pix_array, interpolation='none')
+        target_code3, target_index_of1 = app_code.get_code3(
+            target_pix_array)
+        transform_pix_array = app_code.transform(target_index_of1,
+                                                 target_pix_array.shape)
+        plt.figure(2)
+        plt.imshow(transform_pix_array, interpolation='none')
         plt.show()
 
     def test_find_transform(self):
@@ -231,6 +232,22 @@ class Test(unittest.TestCase):
         """
         self.assertIsNotNone(app_code.corr_between_points(
             list(self.code4.items())[0], list(self.code4.items())[0]))
+        A = cl.OrderedDict([((0, 4, 10, 16),
+                        cl.OrderedDict([('code3',
+                                      cl.OrderedDict(
+                                          [((0, 10, 16), 1.0),
+                                           ((4, 10, 16), 1.0),
+                                           ((0, 4, 10), 1.0),
+                                           ((0, 4, 16), 1.0)]))]))])
+        B = cl.OrderedDict([((0, 10, 4, 16),
+                        cl.OrderedDict([('code3',
+                                      cl.OrderedDict(
+                                          [((4, 10, 16), 1.0),
+                                           ((4, 10, 16), 1.0),
+                                           ((0, 16, 4), 1.0),
+                                           ((4, 0, 10), 1.0)]))]))])
+        self.assertIsNone(app_code.corr_between_points(
+            list(A.items())[0], list(B.items())[0]))
 
     def test_equal_element_code(self):
         """
