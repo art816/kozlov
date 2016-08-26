@@ -6,6 +6,7 @@ import itertools
 import os
 import unittest
 import collections as cl
+import operator
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -130,6 +131,25 @@ class Test(unittest.TestCase):
                 example_x = []
                 example_y = []
                 # pairs = pairs_equal_code[0]
+                dict_pairs = dict()
+                dict_target_num = dict()
+                dict_example_num = dict()
+                for target_n, example_n in pairs:
+                    if dict_pairs.get((target_n, example_n)):
+                        dict_pairs[(target_n, example_n)] = dict_pairs[(target_n, example_n)] + 1
+                    else:
+                        dict_pairs[(target_n, example_n)] = 1
+                dict_pairs = cl.OrderedDict(sorted(dict_pairs.items(), key=operator.itemgetter(0), reverse=True))
+                for target_n, example_n in dict_pairs.keys():
+                    if dict_target_num.get(target_n):
+                        dict_target_num[target_n].append(dict_pairs[(target_n, example_n)])
+                    else:
+                        dict_target_num[target_n] = [dict_pairs[(target_n, example_n)]]
+                    if dict_example_num.get(example_n):
+                        dict_example_num[example_n].append(dict_pairs[(target_n, example_n)])
+                    else:
+                        dict_example_num[example_n] = [dict_pairs[(target_n, example_n)]]
+
                 for target_n, example_n in pairs:
                     target_x.append(target_index_of1[0][target_n])
                     target_y.append(target_index_of1[1][target_n])
@@ -140,6 +160,7 @@ class Test(unittest.TestCase):
                 example = np.vstack(
                     [example_x, example_y, np.ones(len(example_x))]).T
                 A, std = app_code.find_transform(target, example)
+                print(dict_pairs, '\n', dict_target_num, '\n', dict_example_num)
                 print(A, std, type(std))
                 if std > cfg.std:
                     continue
