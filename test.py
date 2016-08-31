@@ -25,7 +25,7 @@ class Test(unittest.TestCase):
         cls.x = np.array([0, 0, 1, 1])
         cls.y = np.array([0, 1, 1, 0])
         cls.image_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), cfg.image_names[0])
+            os.path.dirname(os.path.abspath(__file__)), cfg.image_names[3])
         cls.pix_array = app_code.open_image(cls.image_path)
         cls.code3, cls.index_of1 = app_code.get_code3(
             cls.pix_array)
@@ -100,7 +100,7 @@ class Test(unittest.TestCase):
         # target_pix_array = app_code.open_image(self.image_path, rotate=0)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
         target_pix_array = app_code.open_image(
             os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                         cfg.image_names[1]), rotate=0)
+                         cfg.image_names[3]), rotate=0)
 
         target_code3, target_index_of1 = app_code.get_code3(
             target_pix_array)
@@ -139,18 +139,20 @@ class Test(unittest.TestCase):
                         dict_pairs[(target_n, example_n)] = dict_pairs[(target_n, example_n)] + 1
                     else:
                         dict_pairs[(target_n, example_n)] = 1
-                dict_pairs = cl.OrderedDict(sorted(dict_pairs.items(), key=operator.itemgetter(0), reverse=True))
-                for target_n, example_n in dict_pairs.keys():
-                    if dict_target_num.get(target_n):
-                        dict_target_num[target_n].append(dict_pairs[(target_n, example_n)])
+                dict_pairs = cl.OrderedDict(sorted(dict_pairs.items(), key=operator.itemgetter(1), reverse=True))
+                unique_target = []
+                unique_example = []
+                unique_pairs = []
+                for current_targen_num, current_example_num in dict_pairs.keys():
+                    print(current_targen_num, current_example_num)
+                    if current_targen_num in unique_target or current_example_num in unique_example:
+                        pass
                     else:
-                        dict_target_num[target_n] = [dict_pairs[(target_n, example_n)]]
-                    if dict_example_num.get(example_n):
-                        dict_example_num[example_n].append(dict_pairs[(target_n, example_n)])
-                    else:
-                        dict_example_num[example_n] = [dict_pairs[(target_n, example_n)]]
+                        unique_pairs.append((current_targen_num, current_example_num))
+                        unique_target.append(current_targen_num)
+                        unique_example.append(current_example_num)
 
-                for target_n, example_n in pairs:
+                for target_n, example_n in unique_pairs:
                     target_x.append(target_index_of1[0][target_n])
                     target_y.append(target_index_of1[1][target_n])
                     example_x.append(self.index_of1[0][example_n])
@@ -160,7 +162,7 @@ class Test(unittest.TestCase):
                 example = np.vstack(
                     [example_x, example_y, np.ones(len(example_x))]).T
                 A, std = app_code.find_transform(target, example)
-                print(dict_pairs, '\n', dict_target_num, '\n', dict_example_num)
+                print("dict_pairs={}\tunique_t={}\tunique_e={}\tunique_pairs={}\n".format(dict_pairs, unique_target, unique_example, unique_pairs))
                 print(A, std, type(std))
                 if std > cfg.std:
                     continue
@@ -179,7 +181,14 @@ class Test(unittest.TestCase):
                     y = np.array(self.index_of1[1][t0])
                     example_one = np.vstack([x, y, 1]).T
                     xy = np.dot(example_one, A)
-                    pix_array[int(round(xy[0][0])), int(round(xy[0][1]))] = 1
+                    try:
+                        pix_array[int(round(xy[0][0])), int(round(xy[0][1]))] = 1
+                    except IndexError:
+                        try:
+                            pix_array[-1, int(round(xy[0][1]))] = 1
+                        except IndexError:
+                            pix_array[int(round(xy[0][0])), -1] = 1
+
                 rgbArray = np.ones(
                     (target_pix_array.shape[0], target_pix_array.shape[1], 3),
                     'uint8')

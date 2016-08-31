@@ -261,7 +261,7 @@ def find_by_code4(target_code4, example_code4):
                         target_code4[current_key]['investigated'] = True
                     if num_equals >= cfg.num_equal:
                         list_pairs.append(pair_equal_code)
-                        break
+                        #break
                         # return [pair_equal_code]
     return list_pairs
 
