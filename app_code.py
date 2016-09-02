@@ -261,7 +261,8 @@ def find_by_code4(target_code4, example_code4):
                         target_code4[current_key]['investigated'] = True
                     if num_equals >= cfg.num_equal:
                         list_pairs.append(pair_equal_code)
-                        #break
+                        break
+
                         # return [pair_equal_code]
     return list_pairs
 
@@ -345,17 +346,41 @@ def transform(index_of1, size_array):
     :param index_of1:
     :return:
     """
-    A = np.array([[np.cos(cfg.rotate * np.pi / 180),
-                     -np.sin(cfg.rotate * np.pi / 180), 0],
-                    [np.sin(cfg.rotate * np.pi / 180),
-                     np.cos(cfg.rotate * np.pi / 180), 0],
-                    [0, 0, 1]])
+    import math
+
+    angle = -cfg.rotate * np.pi / 180
+    A = np.array([[np.cos(angle), -np.sin(angle), 0],
+                  [np.sin(angle), np.cos(angle), 0],
+                  [0, 0, 1]])
     # A = np.array([[1, 0, 0],
     #              [0, 1, 0],
     #              [0, 0, 1]])
-    A = A.T * cfg.resize
+
+    print(A)
+    A = A * cfg.resize
+    print(A)
+    # calculate output size
+    w, h = np.array(size_array)
+    print([w,h], size_array)
+    xx = []
+    yy = []
+    for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
+        example = np.vstack([x, y, 1]).T
+        xy = np.dot(example, A)
+        xx.append(xy[0][0])
+        yy.append(xy[0][1])
+    w = int(math.ceil(max(xx)) - math.floor(min(xx)))
+    h = int(math.ceil(max(yy)) - math.floor(min(yy)))
+    example = np.vstack([w / 2.0, h / 2.0, 1]).T
+    xy = np.dot(example, A)
+    print(example, '\n', A, '\n', xy, '\n', size_array)
+    A[2, 0] = -200#size_array[0] / 2.0 - xy[0][0]
+    A[2, 1] = 0#size_array[1] / 2.0 - xy[0][1]
+
+    print(A)
+    # A = A.T * cfg.resize
     #TODO size, пересчет размеров с учетом поворота!!!!!!!!!!!???
-    new_size = np.array(size_array) * cfg.resize[:2] * 2
+    new_size = np.array([w, h])#np.array(size_array) * cfg.resize[:2] * 2
     new_size = new_size.astype(int)
     pix_array = np.zeros(new_size)
     for t0 in range(0, len(index_of1[0])):
@@ -363,9 +388,41 @@ def transform(index_of1, size_array):
         y = np.array(index_of1[1][t0])
         example = np.vstack([x, y, 1]).T
         xy = np.dot(example, A)
-        pix_array[int(xy[0][0]) if xy[0][0] < new_size[0] - 1 else new_size[0] - 1,
-                   int(xy[0][1]) if xy[0][1] < new_size[1] - 1 else new_size[1] - 1] = 1
+        pix_array[
+            int(xy[0][0])%new_size[0],
+            int(xy[0][1])%new_size[1]] = 1
+        # pix_array[int(xy[0][0]) if xy[0][0] < new_size[0] - 1 else new_size[0] - 1,
+        #            int(xy[0][1]) if xy[0][1] < new_size[1] - 1 else new_size[1] - 1] = 1
     return pix_array
+
+def select_point(pix_array):
+    """
+
+    :param pix_array:
+    :return:
+    """
+    # print(pix_array.shape, pix_array.sum())
+    top = int(pix_array.sum()/cfg.selected_points) + 1
+    top = top if top >= 1 else 1
+    pix_array
+    indices = list(pix_array.nonzero())
+    # print(top, indices[::top])
+    selected_pix_array = np.zeros(pix_array.shape)
+
+    # print([indices[0][::top], indices[1][::top]])
+    # Перемешиваем, чтобы равномернее выбирать точки изображения
+    # shuffled_indeces = np.random.permutation(np.arange(indices[0].size))
+    # indices[0] = indices[0][shuffled_indeces]
+    # indices[1] = indices[1][shuffled_indeces]
+    # np.random.shuffle()
+    # random_choice = np.random.choice(
+    #     indices[0].size, cfg.selected_points, replace=False)
+    # selected_pix_array[indices[0][random_choice], indices[1][random_choice]] = 1
+    selected_pix_array[indices[0][::top], indices[1][::top]] = 1
+    # print(selected_pix_array.sum())
+    # print(selected_pix_array)
+    return selected_pix_array
+
 
 
 
