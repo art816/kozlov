@@ -367,15 +367,17 @@ def transform(index_of1, size_array):
     for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
         example = np.vstack([x, y, 1]).T
         xy = np.dot(example, A)
+        print(xy)
         xx.append(xy[0][0])
         yy.append(xy[0][1])
     w = int(math.ceil(max(xx)) - math.floor(min(xx)))
     h = int(math.ceil(max(yy)) - math.floor(min(yy)))
-    example = np.vstack([w / 2.0, h / 2.0, 1]).T
+    example = np.vstack([size_array[0] / 2.0, size_array[1] / 2.0, 1]).T
     xy = np.dot(example, A)
     print(example, '\n', A, '\n', xy, '\n', size_array)
-    A[2, 0] = -200#size_array[0] / 2.0 - xy[0][0]
-    A[2, 1] = 0#size_array[1] / 2.0 - xy[0][1]
+    print(example, size_array[0]/2, xy[0][0])
+    A[2, 0] = w / 2 - xy[0][0]
+    A[2, 1] = h / 2 - xy[0][1]
 
     print(A)
     # A = A.T * cfg.resize
@@ -388,6 +390,9 @@ def transform(index_of1, size_array):
         y = np.array(index_of1[1][t0])
         example = np.vstack([x, y, 1]).T
         xy = np.dot(example, A)
+        # pix_array[
+        #     int(xy[0][0]),
+        #     int(xy[0][1])] = 1
         pix_array[
             int(xy[0][0])%new_size[0],
             int(xy[0][1])%new_size[1]] = 1
@@ -395,7 +400,7 @@ def transform(index_of1, size_array):
         #            int(xy[0][1]) if xy[0][1] < new_size[1] - 1 else new_size[1] - 1] = 1
     return pix_array
 
-def select_point(pix_array):
+def select_point(pix_array, random=0):
     """
 
     :param pix_array:
@@ -418,7 +423,12 @@ def select_point(pix_array):
     # random_choice = np.random.choice(
     #     indices[0].size, cfg.selected_points, replace=False)
     # selected_pix_array[indices[0][random_choice], indices[1][random_choice]] = 1
-    selected_pix_array[indices[0][::top], indices[1][::top]] = 1
+    if random:
+        selected_pix_array[
+            indices[0][::top] + np.random.random_integers(-int(random/2), int(random/2), cfg.selected_points),
+            indices[1][::top] + np.random.random_integers(-int(random/2), int(random/2), cfg.selected_points)] = 1
+    else:
+        selected_pix_array[indices[0][::top], indices[1][::top]] = 1
     # print(selected_pix_array.sum())
     # print(selected_pix_array)
     return selected_pix_array

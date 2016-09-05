@@ -116,11 +116,14 @@ class Test(unittest.TestCase):
                         else 0
 
         target_pix_array = app_code.select_point(pix_array_red)
-        example_pix_array = app_code.select_point(pix_array_blue)
+        example_pix_array = app_code.select_point(pix_array_blue, random=3)
         plt.figure(1)
-        plt.imshow(target_pix_array, interpolation='none')
-        plt.figure(2)
-        plt.imshow(example_pix_array, interpolation='none')
+        rgbArray = np.zeros(
+            (target_pix_array.shape[0], target_pix_array.shape[1], 3),
+            'uint8')
+        rgbArray[...,0] = 255*target_pix_array
+        rgbArray[...,2] = 255*example_pix_array
+        plt.imshow(rgbArray, interpolation='none')
         plt.show()
         # input()
         print('1')
@@ -136,8 +139,9 @@ class Test(unittest.TestCase):
         print('1')
         # target_code3, target_index_of1 = app_code.get_code3(
         #     target_pix_array)
-        # target_pix_array = app_code.transform(np.where(target_pix_array == 1),
-        #                                        target_pix_array.shape)
+        pix_array_red = app_code.transform(np.where(pix_array_red == 1), pix_array_red.shape)
+        target_pix_array = app_code.transform(np.where(target_pix_array == 1),
+                                               target_pix_array.shape)
         target_code3, target_index_of1 = app_code.get_code3(
             target_pix_array)
         example_code3, example_index_of1 = app_code.get_code3(
@@ -151,11 +155,11 @@ class Test(unittest.TestCase):
         # TODO открывать изображения в новом потоке
         # Process(target=plt.show, args=(None,)).start()
         # target_code4 = copy.deepcopy(example_code4)
-        # plt.figure(1)
-        # plt.imshow(target_pix_array, interpolation='none')
-        # plt.figure(2)
-        # plt.imshow(example_pix_array, interpolation='none')
-        # plt.show()
+        plt.figure(1)
+        plt.imshow(target_pix_array, interpolation='none')
+        plt.figure(2)
+        plt.imshow(example_pix_array, interpolation='none')
+        plt.show()
         pairs_equal_code = app_code.find_by_code4(target_code4, example_code4)
         if pairs_equal_code:
             # TODO помним что есть повторяющиеся пары в коде.
@@ -226,15 +230,19 @@ class Test(unittest.TestCase):
                         pix_array[-1, int(round(xy[0][1]))] = 1
                     except IndexError:
                         pix_array[int(round(xy[0][0])), -1] = 1
+
+
                 print(target)
+
+
                 target_base = np.zeros(target_pix_array.shape, 'uint8')
                 target_base[target[:, 0].astype(int), target[:, 1].astype(int)] = 1
                 rgbArray = np.ones(
                     (target_pix_array.shape[0], target_pix_array.shape[1], 3),
                     'uint8')
-                rgbArray[..., 0] = 255 * (target_pix_array)# - 127 * target_base
+                rgbArray[..., 0] = 255 * (pix_array_red)# - 127 * target_base
                 rgbArray[..., 1] = 255 * (pix_array)# - 127 * pix_array_base
-                rgbArray[..., 2] = 10 * pix_array_base + 200 * target_base# np.ones(target_pix_array.shape,
+                rgbArray[..., 2] = 30 * pix_array_base + 60 * target_base# np.ones(target_pix_array.shape,
                                                  # 'uint8')
                 plt.figure(3)
                 plt.imshow(rgbArray, interpolation='none')
@@ -258,6 +266,10 @@ class Test(unittest.TestCase):
         target_pix_array = app_code.open_image(os.path.join(
             os.path.dirname(os.path.abspath(__file__)), cfg.image_names[1]),
             rotate=0)
+        target_pix_array[:,0] = 1
+        target_pix_array[:,-1] = 1
+        target_pix_array[0, :] = 1
+        target_pix_array[-1, :] = 1
         plt.figure(1)
         plt.imshow(target_pix_array, interpolation='none')
         target_code3, target_index_of1 = app_code.get_code3(
