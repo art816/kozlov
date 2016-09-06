@@ -71,8 +71,11 @@ def get_code4(code3):
     #print(unique_value_in_key)
     for key_for4 in itertools.combinations(unique_value_in_key, 4):
         code4[key_for4] = cl.OrderedDict(code3=cl.OrderedDict(),
-                                             next_4=None,
-                                             investigated=False)
+                                         next_4=None,
+                                         investigated=False,
+                                         parent=None,
+                                         level=0
+                                         )
         for key_for3 in itertools.combinations(key_for4, 3):
             code_value = code3.get(key_for3)
             if code_value is None:
@@ -129,9 +132,23 @@ def add_key_for_next_small4(code4):
             # new_3.extend(bigger_3)
             # if len(set(keys[num_key])) == 4:
             # if len(set(keys[num_key])) == 4:
+            # Добавляем ссылки на родителей и детей.
+            # Один ребенок, несколько родителей.
             if len(set(new_4)) == 4:
                 code4[keys[num_key]]['next_4'] = keys[num_key2]
+                if code4[keys[num_key2]]['parent'] is None:
+                    code4[keys[num_key2]]['parent'] = [keys[num_key]]
+                else:
+                    code4[keys[num_key2]]['parent'].append(keys[num_key])
                 break
+
+    # Проходим от самых маленьких к большим n-угольникам и выставляем уровни(число потомков)
+    for num_key in reversed(range(len(keys))):
+        parent_list = code4[keys[num_key]]['parent']
+        if parent_list:
+            for parent_key in parent_list:
+                code4[parent_key]['level'] = code4[keys[num_key]][
+                                             'level'] + 1
 
 
 def polyarea(x, y):

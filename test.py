@@ -401,7 +401,8 @@ class Test(unittest.TestCase):
         for element in self.code4:
             next_4 = self.code4[element]['next_4']
             G.add_node(element,
-                       weight=sum(self.code4[element]['code3'].values()))
+                       weight=sum(self.code4[element]['code3'].values()),
+                       level=self.code4[element]['level'])
             G.add_edge(element, next_4, weight=1)
             current_code = np.array(list(self.code4[element]['code3'].values()))
             current_code = tuple(current_code / current_code[0])
@@ -416,11 +417,13 @@ class Test(unittest.TestCase):
 
         # print(nx.info(G))
         # nodes_labels = dict([(u, d) for u, d in G.nodes(data=True)])
+        nodes_labels = nx.get_node_attributes(G, 'level')
+        # print(nodes_labels)
         # pos = nx.spring_layout(G)
         # nx.draw(G)
         pos = hierarchy_pos(G, None)  # list(self.code4.keys())[0])
-        # nx.draw_networkx_nodes(G, pos, labels=nodes_labels)
-        nx.draw(G, pos=pos, with_labels=True)
+        nx.draw_networkx_labels(G, pos, labels=nodes_labels)
+        nx.draw(G, pos=pos)
         plt.show()
 
         pos = hierarchy_pos(G_sq, None)  # list(self.code4.keys())[0])
