@@ -237,14 +237,19 @@ def find_by_code4(target_code4, example_code4):
         # if target_code4[target_keys[num_target_key]]['investigated'] is False:
         #     if list(example_code4[example_keys[num_example_key]]['code3'].values)[0]/list(target_code4[target_keys[num_target_key]]['code3'].values)[0] > cfg.diff_size:
                 # break
+            if target_code4[target_keys[num_target_key]]['level'] < cfg.num_equal:
+                continue
+
             for num_example_key in range(len(example_keys)):
+                num_iteration = 0
+                num_equals = 0
+                if example_code4[example_keys[num_example_key]]['level'] < cfg.num_equal:
+                    continue
                 curr_target_key = target_keys[num_target_key]
                 curr_example_key = example_keys[num_example_key]
                 current_target_code4 = target_code4[curr_target_key]
                 current_example_code4 = example_code4[curr_example_key]
                 list_current_keys_target = []
-                num_iteration = 0
-                num_equals = 0
                 pair_equal_code = []
                 curr_pair_equal_code = equal_code(
                         (curr_target_key, current_target_code4),
@@ -259,6 +264,12 @@ def find_by_code4(target_code4, example_code4):
                     num_equals = 1
                     while curr_target_key and curr_example_key:
                         num_iteration += 1
+                        if target_code4[curr_target_key]['level'] <\
+                                cfg.num_equal - num_equals\
+                            or\
+                            example_code4[curr_example_key]['level'] <\
+                                cfg.num_equal - num_equals:
+                            break
                         current_target_code4 = target_code4[curr_target_key]
                         current_example_code4 = example_code4[curr_example_key]
                         curr_pair_equal_code = equal_code(
@@ -278,7 +289,7 @@ def find_by_code4(target_code4, example_code4):
                         target_code4[current_key]['investigated'] = True
                     if num_equals >= cfg.num_equal:
                         list_pairs.append(pair_equal_code)
-                        break
+                        # break
 
                         # return [pair_equal_code]
     return list_pairs

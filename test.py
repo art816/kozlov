@@ -423,7 +423,7 @@ class Test(unittest.TestCase):
         # nx.draw(G)
         pos = hierarchy_pos(G, None)  # list(self.code4.keys())[0])
         nx.draw_networkx_labels(G, pos, labels=nodes_labels)
-        nx.draw(G, pos=pos)
+        nx.draw(G, pos=pos, with_labels=True)
         plt.show()
 
         pos = hierarchy_pos(G_sq, None)  # list(self.code4.keys())[0])
