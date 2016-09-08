@@ -99,151 +99,127 @@ class Test(unittest.TestCase):
 
         img = PyPaint.main()
         print(img.shape)
-        pix_array_red = np.zeros(img.shape[:2])
-        pix_array_blue = np.zeros(img.shape[:2])
-        for num_str in range(img.shape[0]):
-            for num_coll in range(img.shape[1]):
-                # TODO выбирать только особые точки, а то слишком много
-                pix_array_red[num_str, num_coll] = \
-                    1 if img[num_str, num_coll, 0] >126 \
-                         and img[num_str, num_coll, 1] < 126 \
-                         and img[num_str, num_coll, 2] < 126 \
-                        else 0
-                pix_array_blue[num_str, num_coll] = \
-                    1 if img[num_str, num_coll, 0] > 126 \
-                         and img[num_str, num_coll, 1] < 126 \
-                         and img[num_str, num_coll, 2] < 126 \
-                        else 0
+        pix_array_red = app_code.get_img_chanel(img, 'red')
+        pix_array_blue = app_code.get_img_chanel(img, 'red')
+        target_pix_array = app_code.select_point(pix_array_red, random=0)
+        example_pix_array = app_code.select_point(pix_array_blue, random=1)
 
-        target_pix_array = app_code.select_point(pix_array_red)
-        example_pix_array = app_code.select_point(pix_array_blue, random=3)
+        pix_array_red = app_code.transform(np.where(pix_array_red == 1),
+                                           pix_array_red.shape)
+        target_pix_array = app_code.transform(np.where(target_pix_array == 1),
+                                              target_pix_array.shape)
+        # pix_array_blue = app_code.transform(np.where(pix_array_blue == 1),
+        #                                     pix_array_blue.shape)
+        # example_pix_array = app_code.transform(np.where(example_pix_array == 1),
+        #                                        example_pix_array.shape)
+
         plt.figure(1)
         rgbArray = np.zeros(
-            (target_pix_array.shape[0], target_pix_array.shape[1], 3),
-            'uint8')
+                (target_pix_array.shape[0], target_pix_array.shape[1], 3),
+                'uint8')
         rgbArray[...,0] = 255*target_pix_array
-        rgbArray[...,2] = 255*example_pix_array
+        rgbArray[...,1] = 255*pix_array_red
+        plt.imshow(rgbArray, interpolation='none')
+        rgbArray = np.zeros(
+            (example_pix_array.shape[0], example_pix_array.shape[1], 3),
+            'uint8')
+        rgbArray[..., 0] = 255 * example_pix_array
+        rgbArray[..., 1] = 255 * pix_array_blue
+        plt.figure(2)
         plt.imshow(rgbArray, interpolation='none')
         plt.show()
+        # plt.figure(1)
+        # rgbArray = np.zeros(
+        #     (target_pix_array.shape[0], target_pix_array.shape[1], 3),
+        #     'uint8')
+        # rgbArray[...,0] = 255*target_pix_array
+        # rgbArray[...,2] = 255*example_pix_array
+        # plt.imshow(rgbArray, interpolation='none')
+        # plt.show()
         # input()
-        print('1')
         # code3 = app_code.get_code3(
         #     np.array([self.x, self.y]))
-        print('1')
         # example_code4 = app_code.get_code4(self.code3)
-        print('1')
         # target_pix_array = app_code.open_image(self.image_path, rotate=0)#'C:\\Users\\art\\Documents\\MATLAB\\Apps\\козлов\\ABVG.bmp', rotate=0)
         # target_pix_array = app_code.open_image(
         #     os.path.join(os.path.dirname(os.path.abspath(__file__)),
         #                  cfg.image_names[1]), rotate=0)
-        print('1')
         # target_code3, target_index_of1 = app_code.get_code3(
         #     target_pix_array)
-        pix_array_red = app_code.transform(np.where(pix_array_red == 1), pix_array_red.shape)
-        target_pix_array = app_code.transform(np.where(target_pix_array == 1),
-                                               target_pix_array.shape)
+
+        #make affine transform
+        # pix_array_red = app_code.transform(np.where(pix_array_red == 1), pix_array_red.shape)
+        # target_pix_array = app_code.transform(np.where(target_pix_array == 1),
+        #                                        target_pix_array.shape)
         target_code3, target_index_of1 = app_code.get_code3(
             target_pix_array)
         example_code3, example_index_of1 = app_code.get_code3(
             example_pix_array)
-        print('2')
         target_code4 = app_code.get_code4(target_code3)
         example_code4 = app_code.get_code4(example_code3)
-        print('1')
         app_code.add_key_for_next_small4(target_code4)
         app_code.add_key_for_next_small4(example_code4)
+
         # TODO открывать изображения в новом потоке
         # Process(target=plt.show, args=(None,)).start()
         # target_code4 = copy.deepcopy(example_code4)
-        plt.figure(1)
-        plt.imshow(target_pix_array, interpolation='none')
-        plt.figure(2)
-        plt.imshow(example_pix_array, interpolation='none')
-        plt.show()
+        # plt.figure(1)
+        # plt.imshow(target_pix_array, interpolation='none')
+        # plt.figure(2)
+        # plt.imshow(example_pix_array, interpolation='none')
+        # plt.show()
+
         pairs_equal_code = app_code.find_by_code4(target_code4, example_code4)
+
         if pairs_equal_code:
             # TODO помним что есть повторяющиеся пары в коде.
-            #  Преобразование строится методом наименьших квадратов.
+            # Преобразование строится методом наименьших квадратов.
             # К повторяющимся парам больше доверия
-            print(len(pairs_equal_code), pairs_equal_code)
+            # print(len(pairs_equal_code), pairs_equal_code)
             for pairs in pairs_equal_code:
-                target_x = []
-                target_y = []
-                example_x = []
-                example_y = []
-                # pairs = pairs_equal_code[0]
-                dict_pairs = dict()
-                dict_target_num = dict()
-                dict_example_num = dict()
-                for target_n, example_n in pairs:
-                    if dict_pairs.get((target_n, example_n)):
-                        dict_pairs[(target_n, example_n)] = dict_pairs[(target_n, example_n)] + 1
-                    else:
-                        dict_pairs[(target_n, example_n)] = 1
-                dict_pairs = cl.OrderedDict(sorted(dict_pairs.items(), key=operator.itemgetter(1), reverse=True))
-                unique_target = []
-                unique_example = []
-                unique_pairs = []
-                for current_targen_num, current_example_num in dict_pairs.keys():
-                    print(current_targen_num, current_example_num)
-                    if current_targen_num in unique_target or current_example_num in unique_example:
-                        pass
-                    else:
-                        unique_pairs.append((current_targen_num, current_example_num))
-                        unique_target.append(current_targen_num)
-                        unique_example.append(current_example_num)
-
-                for target_n, example_n in unique_pairs:
-                    target_x.append(target_index_of1[0][target_n])
-                    target_y.append(target_index_of1[1][target_n])
-                    example_x.append(example_index_of1[0][example_n])
-                    example_y.append(example_index_of1[1][example_n])
-                target = np.vstack(
-                    [target_x, target_y, np.ones(len(target_x))]).T
-                example = np.vstack(
-                    [example_x, example_y, np.ones(len(example_x))]).T
+                dict_pairs = app_code.get_dict_pairs(pairs)
+                unique_pairs = app_code.get_unique_pairs_by_truth(dict_pairs)
+                target = app_code.indecs_1d_to_2d(
+                    [one_pair[0] for one_pair in unique_pairs], target_index_of1)
+                example = app_code.indecs_1d_to_2d(
+                    [one_pair[1] for one_pair in unique_pairs], example_index_of1)
                 A, std = app_code.find_transform(target, example)
-                print("dict_pairs={}\tunique_t={}\tunique_e={}\tunique_pairs={}\n".format(dict_pairs, unique_target, unique_example, unique_pairs))
+
+                # print("dict_pairs={}\tunique_t={}\tunique_e={}\tunique_pairs={}\n".format(dict_pairs, unique_target, unique_example, unique_pairs))
                 print(A, std, type(std))
                 # if std > cfg.std:
                 #     continue
-                pix_array = np.zeros(target_pix_array.shape)
+
                 # print(image_array.shape, np.max(image_array), image_array)
                 # print(np.max(image_array), np.min(image_array), image_array.shape,
                 #      width, height)
-                pix_array_base = np.zeros(target_pix_array.shape, 'uint8')
-                xy_base = np.dot(example, A)
-                for n in range(xy_base.shape[0]):
-                    pix_array_base[int(round(xy_base[n][0])), int(
-                        round(xy_base[n][1]))] = 1
 
-                # for t0 in range(0, len(example_index_of1[0])):
-                #     x = np.array(example_index_of1[0][t0])
-                #     y = np.array(example_index_of1[1][t0])
+                transform_example_base = np.zeros(target_pix_array.shape, 'uint8')
+                xy_base = np.dot(example, A)
+                transform_example_base[
+                    xy_base[:, 0].astype(int) % target_pix_array.shape[0],
+                    xy_base[:, 1].astype(int) % target_pix_array.shape[1]] = 1
+
                 x, y = np.nonzero(pix_array_blue)
+                transform_pix_array_blue = np.zeros(target_pix_array.shape)
                 example_one = np.vstack([x, y, np.ones(x.shape)]).T
                 xy = np.dot(example_one, A)
-                try:
-                    pix_array[xy[:,0].astype(int), xy[:,1].astype(int)] = 1
-                except IndexError:
-                    try:
-                        pix_array[-1, int(round(xy[0][1]))] = 1
-                    except IndexError:
-                        pix_array[int(round(xy[0][0])), -1] = 1
-
-
-                print(target)
-
+                transform_pix_array_blue[
+                    xy[:, 0].astype(int) % target_pix_array.shape[0],
+                    xy[:, 1].astype(int) % target_pix_array.shape[1]] = 1
 
                 target_base = np.zeros(target_pix_array.shape, 'uint8')
-                target_base[target[:, 0].astype(int), target[:, 1].astype(int)] = 1
+                target_base[
+                    target[:, 0].astype(int) % target_pix_array.shape[0],
+                    target[:, 1].astype(int) % target_pix_array.shape[1]] = 1
+
                 rgbArray = np.ones(
                     (target_pix_array.shape[0], target_pix_array.shape[1], 3),
                     'uint8')
                 rgbArray[..., 0] = 255 * (pix_array_red)# - 127 * target_base
-                rgbArray[..., 1] = 255 * (pix_array)# - 127 * pix_array_base
-                rgbArray[..., 2] = 30 * pix_array_base + 60 * target_base# np.ones(target_pix_array.shape,
-                                                 # 'uint8')
+                rgbArray[..., 1] = 255 * (transform_pix_array_blue)# - 127 * transform_example_base
+                rgbArray[..., 2] = 30 * transform_example_base + 60 * target_base# np.ones(target_pix_array.shape,
+                # 'uint8')
                 plt.figure(3)
                 plt.imshow(rgbArray, interpolation='none')
                 # TODO открывать изображения в новом потоке

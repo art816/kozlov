@@ -11,7 +11,7 @@ class Paint(Frame):
         Frame.__init__(self, parent)
 
         self.parent = parent
-        self.color = "black"
+        self.color = "red"
         self.brush_size = 1
         self.setUI()
 
@@ -19,7 +19,7 @@ class Paint(Frame):
         self.color = new_color
 
     def set_brush_size(self, new_size):
-        # self.brush_size = new_size
+        self.brush_size = new_size
         pass
 
     def draw(self, event):

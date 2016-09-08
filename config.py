@@ -1,9 +1,9 @@
 __author__ = 'art'
 
-decimals = 1
-rotate = 30
+decimals = 2
+rotate = 0
 diff_size = 110
-selected_points = 50
+selected_points = 16
 num_equal = int(selected_points/3)
 img_level_binary = 0.07
 resize = [1, 1, 1]

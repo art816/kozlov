@@ -1,14 +1,12 @@
 __author__ = 'art'
 
-from PIL import Image
-import numpy as np
 import collections as cl
 import itertools
 import operator
-import cv2
-import matplotlib.pyplot as plt
-import networkx
 
+import cv2
+import numpy as np
+from PIL import Image
 
 import config as cfg
 
@@ -123,6 +121,10 @@ def add_key_for_next_small4(code4):
         Ничего не понятно((
     """
     keys = list(code4.keys())
+    unique_value_in_key = []
+    for key in keys:
+        unique_value_in_key.extend(key)
+    unique_value_in_key = sorted(list(set(unique_value_in_key)))
     for num_key in range(len(keys)):
         bigger_3 = list(code4[keys[num_key]]['code3'].keys())[0]
         for num_key2 in range(num_key + 1, len(keys)):
@@ -135,6 +137,12 @@ def add_key_for_next_small4(code4):
             # Добавляем ссылки на родителей и детей.
             # Один ребенок, несколько родителей.
             if len(set(new_4)) == 4:
+        # for new_value in unique_value_in_key:
+        #     if new_value not in bigger_3:
+        #         next_4 = list(bigger_3)
+        #         next_4.append(new_value)
+        #         next_4 = sorted(next_4)
+                
                 code4[keys[num_key]]['next_4'] = keys[num_key2]
                 if code4[keys[num_key2]]['parent'] is None:
                     code4[keys[num_key2]]['parent'] = [keys[num_key]]
@@ -334,7 +342,7 @@ def equal_element_code(target_element_code, example_element_code):
 def find_transform(target, example):
     A = np.linalg.lstsq(example, target)[0]
     #A = np.linalg.solve(example, target)
-    return A, np.std(target - np.dot(example, A))
+    return A, [np.sum(abs(target - np.dot(example, A)))/target.shape[0], target.shape[0]]
 
 
 def corr_between_points(target, example):
@@ -384,30 +392,23 @@ def transform(index_of1, size_array):
     #              [0, 1, 0],
     #              [0, 0, 1]])
 
-    print(A)
     A = A * cfg.resize
-    print(A)
     # calculate output size
     w, h = np.array(size_array)
-    print([w,h], size_array)
     xx = []
     yy = []
     for x, y in ((0, 0), (w, 0), (w, h), (0, h)):
         example = np.vstack([x, y, 1]).T
         xy = np.dot(example, A)
-        print(xy)
         xx.append(xy[0][0])
         yy.append(xy[0][1])
     w = int(math.ceil(max(xx)) - math.floor(min(xx)))
     h = int(math.ceil(max(yy)) - math.floor(min(yy)))
     example = np.vstack([size_array[0] / 2.0, size_array[1] / 2.0, 1]).T
     xy = np.dot(example, A)
-    print(example, '\n', A, '\n', xy, '\n', size_array)
-    print(example, size_array[0]/2, xy[0][0])
     A[2, 0] = w / 2 - xy[0][0]
     A[2, 1] = h / 2 - xy[0][1]
 
-    print(A)
     # A = A.T * cfg.resize
     #TODO size, пересчет размеров с учетом поворота!!!!!!!!!!!???
     new_size = np.array([w, h])#np.array(size_array) * cfg.resize[:2] * 2
@@ -461,9 +462,88 @@ def select_point(pix_array, random=0):
     # print(selected_pix_array)
     return selected_pix_array
 
+def get_dict_pairs(pairs):
+    """
+
+    :param pairs: list of pairs eqaul ponts
+    :return: dict pairs sorted by truth
+    """
+    dict_pairs = dict()
+    for target_n, example_n in pairs:
+        if dict_pairs.get((target_n, example_n)):
+            dict_pairs[(target_n, example_n)] = dict_pairs[
+                                                    (target_n, example_n)] + 1
+        else:
+            dict_pairs[(target_n, example_n)] = 1
+    dict_pairs = cl.OrderedDict(
+        sorted(dict_pairs.items(), key=operator.itemgetter(1), reverse=True))
+    return dict_pairs
+
+def get_unique_pairs_by_truth(dict_pairs):
+    """
+
+    :param dict_pairs:
+    :return:
+    """
+    unique_target = []
+    unique_example = []
+    unique_pairs = []
+    for current_targen_num, current_example_num in dict_pairs.keys():
+        if current_targen_num in unique_target or current_example_num in unique_example:
+            pass
+        else:
+            unique_pairs.append((current_targen_num, current_example_num))
+            unique_target.append(current_targen_num)
+            unique_example.append(current_example_num)
+    return unique_pairs
 
 
+def get_img_chanel(img, chanel):
+    """
+    :param img:
+    :param chanel:
+    :return:
+    """
+    pix_array = np.zeros(img.shape[:2])
+    for num_str in range(img.shape[0]):
+        for num_coll in range(img.shape[1]):
+            # TODO выбирать только особые точки, а то слишком много
+            red = img[num_str, num_coll, 0]
+            green = img[num_str, num_coll, 1]
+            blue = img[num_str, num_coll, 2]
+            if chanel == 'red':
+                pix_array[
+                    num_str, num_coll] = 1 if\
+                        red >= 126 and green < 126 and blue < 126\
+                    else 0
+            elif chanel == 'blue':
+                pix_array[
+                    num_str, num_coll] = 1 if\
+                        red < 126 and green < 126 and blue >= 126\
+                    else 0
+            elif chanel == 'green':
+                pix_array[
+                    num_str, num_coll] = 1 if\
+                        red < 126 and green >= 126 and blue < 126\
+                    else 0
+    return pix_array
 
+def indecs_1d_to_2d(indices_1d, index_of1):
+    """
+
+    :param unique_pairs:
+    :param target_index_of1:
+    :param example_index_of1:
+    :return:
+    """
+    coordinat_x = []
+    coordinat_y = []
+    for coordinat_n in indices_1d:
+        coordinat_x.append(index_of1[0][coordinat_n])
+        coordinat_y.append(index_of1[1][coordinat_n])
+    indices_2d = np.vstack(
+        [coordinat_x, coordinat_y, np.ones(len(coordinat_x))]).T
+    return indices_2d
 
 
 if __name__ == '__main__':
